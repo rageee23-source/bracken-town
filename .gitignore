@@ -3,3 +3,4 @@ town.tmp
 __pycache__/
 *.pyc
 .env*
+store.local.json

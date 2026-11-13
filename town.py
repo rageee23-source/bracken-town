@@ -1,6 +1,6 @@
 import json, os, time, threading, uuid, urllib.request, urllib.error
 from pathlib import Path
-import economy, budget, council
+import economy, budget, council, studio, sales
 from needs import FACILITIES, initialize, advance, resolve
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -47,6 +47,14 @@ def choose(actor,neighbors,minute):
         schema=body['response_format']['json_schema']['schema']
         schema['properties']['vote']={'type':'string','enum':['yes','no']}
         schema['required'].append('vote')
+    assignment=studio.task(world,actor)
+    if assignment:
+        kind,instruction=assignment
+        body['messages'][0]['content']+=' At the town hall: '+instruction
+        schema=body['response_format']['json_schema']['schema']
+        for field in (['pitch','manuscript'] if kind=='pitch' else ['selection']):
+            schema['properties'][field]={'type':'string'}
+            schema['required'].append(field)
     if len(json.dumps(body).encode())>65536:raise ValueError('Request size limit')
     req=urllib.request.Request('https://api.openai.com/v1/chat/completions',data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+os.environ['OPENAI_API_KEY'],'Content-Type':'application/json'})
     with urllib.request.urlopen(req,timeout=40) as resp: result=json.load(resp)
@@ -98,6 +106,7 @@ def cycle():
     try:
         with LOCK:
             if epoch==world['epoch']:
+                studio.record(world,a,decision,source)
                 motion=council.session(world)
                 if motion:
                     if source=='OpenAI':
@@ -169,7 +178,20 @@ class Handler(BaseHTTPRequestHandler):
                 world.update(running=True,warning='')
             save()
         self.respond(200,{'ok':True})
+def storefront():
+    config_path=ROOT/'store.local.json'
+    if not config_path.exists():return
+    cfg=json.loads(config_path.read_text('utf-8-sig'))
+    while True:
+        try:
+            sales.update(world,LOCK,save,cfg)
+            with LOCK:world.pop('store_error',None)
+        except Exception as error:
+            with LOCK:world['store_error']='Store retry scheduled ('+type(error).__name__+').'
+        time.sleep(60)
+
 if __name__=='__main__':
     http=ThreadingHTTPServer(('127.0.0.1',8798),Handler)
     threading.Thread(target=loop,daemon=True).start()
+    threading.Thread(target=storefront,daemon=True).start()
     http.serve_forever()

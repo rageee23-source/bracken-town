@@ -50,6 +50,15 @@ function render(){
  $('model').textContent='10 independent residents · '+town.model;
  const b=town.budget;
  $('budget').textContent='$'+Math.max(0,b.limit-b.spent-b.held).toFixed(4)+' available · $'+b.seed+' one-time seed · $'+b.spent.toFixed(4)+' API spend · $'+b.held.toFixed(4)+' held · $'+(b.net_cents/100).toFixed(2)+' settled revenue · $'+(b.owner_cents/100).toFixed(2)+' owner share accrued';
+ const studio=town.studio, panel=$('studio');
+ if(studio){
+  panel.replaceChildren(el('p','Round '+studio.round+' · '+studio.stage));
+  for(const [author,p] of Object.entries(studio.pitches))panel.append(el('p',author+' · '+p.title));
+  const ballots=Object.entries(studio.votes).map(([voter,v])=>voter+' → '+v.candidate);
+  if(ballots.length)panel.append(el('p',ballots.join(', ')));
+  if(studio.url){const link=el('a','View elected offer');link.href=studio.url;panel.append(link);}
+  if(town.store_error)panel.append(el('p',town.store_error));
+ }
  const hall=town.hall, motion=hall?.motion, last=hall?.history.at(-1);
  $('hall').textContent=(motion?motion.text+' '+Object.entries(motion.ballots).map(([name,v])=>name+' '+v.vote+' ('+v.source+')').join(', '):'Assembly adjourned.')+(last?' Last motion '+(last.passed?'passed':'failed')+' — '+last.text:'');
  $('error').textContent=town.warning;
