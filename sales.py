@@ -26,7 +26,7 @@ def deposited(tx,wallet,memo):
     amount=balance(meta['postTokenBalances'])-balance(meta['preTokenBalances'])
     return amount//10000 if amount>=PRICE else 0
 
-def payment(wallet,memo):
+def payment(wallet,memo,extra=()):
     opts={'commitment':'finalized','encoding':'jsonParsed'}
     accounts=rpc('getTokenAccountsByOwner',[wallet,{'mint':MINT},opts])['value']
     for a in accounts:
@@ -37,7 +37,7 @@ def payment(wallet,memo):
                 if row['err'] is not None or memo not in (row.get('memo') or ''):continue
                 sig=row['signature']
                 tx=rpc('getTransaction',[sig,{**opts,'maxSupportedTransactionVersion':0}])
-                for source in ('direct','nostr','forum','dreambit','directory'):
+                for source in ('direct','nostr','forum','dreambit','directory',*extra):
                     expected=memo if source=='direct' else memo+'-'+source
                     cents=deposited(tx,wallet,expected)
                     if cents:return sig,cents,source
@@ -91,7 +91,9 @@ def update(world,lock,save,cfg):
         url=publish(cfg,tag,title,notes)
         with lock:s.update(stage='listed',url=url);save()
     elif stage=='listed':
-        found=payment(wallet,tag)
+        record=world.get('marketing',{}).get('campaigns',{}).get(str(s['round']),{})
+        extra=tuple(k[:-8] for k in record if k.startswith('lemmy-') and k.endswith('_landing'))
+        found=payment(wallet,tag,extra)
         if found:
             sig,cents,source=found
             with lock:

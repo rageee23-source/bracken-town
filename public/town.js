@@ -79,6 +79,8 @@ function render(){
    if(c.dreambit_post){const a=el('a','Play the community edition');a.href=c.dreambit_post;panel.append(a,el('p','Dreambit sponsorship page views: '+(c.dreambit_views??'unreported')));}
    else if(c.dreambit_status)panel.append(el('p','Dreambit submission: '+c.dreambit_status));
   }
+  if(stats?.moderation){panel.append(el('p','Moderator inbox · '+(stats.moderation.account||'checking account')));for(const r of Object.values(stats.moderation.records)){const a=el('a',r.url);a.href=r.post||r.url;panel.append(a,el('p','Round '+r.round+' · '+r.state));}}
+  if(town.moderation_error)panel.append(el('p',town.moderation_error));
   if(town.tabletop_error)panel.append(el('p',town.tabletop_error));
   if(town.marketing_error)panel.append(el('p',town.marketing_error));
   if(town.store_error)panel.append(el('p',town.store_error));

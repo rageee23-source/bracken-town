@@ -224,6 +224,13 @@ def storefront():
                 with LOCK:world.pop('tabletop_error',None)
             except Exception as error:
                 with LOCK:world['tabletop_error']='Tabletop outreach retry pending ('+type(error).__name__+').'
+        if cfg.get('tabletop'):
+            try:
+                import mod_outreach
+                mod_outreach.poll(world,LOCK,save,cfg)
+                with LOCK:world.pop('moderation_error',None)
+            except Exception as error:
+                with LOCK:world['moderation_error']='Moderator inbox retry pending ('+type(error).__name__+').'
         time.sleep(60)
 
 if __name__=='__main__':
