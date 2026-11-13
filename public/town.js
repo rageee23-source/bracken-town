@@ -72,6 +72,12 @@ function render(){
    if(c.nostr_post){const link=el('a','Read round '+round+' on Nostr');link.href=c.nostr_post;panel.append(link);}
    if(c.paths_checked)panel.append(el('p','Landing page views (14 days): Nostr '+(c.nostr_views??'unreported')+' · Forum '+(c.forum_views??'unreported')+' · Sale: '+(c.sale_source||'none')));
   }
+  if(stats?.venues){const list=document.createElement('details');list.append(el('summary',Object.keys(stats.venues).length+' community and directory checks'));for(const [url,v] of Object.entries(stats.venues)){const a=el('a',v.name);a.href=url;list.append(a,el('p',v.status));}panel.append(list);}
+  for(const c of Object.values(stats?.campaigns||{})){
+   if(c.focus)panel.append(el('p','Priority this round: '+c.focus.slice(0,2).join(', ')));
+   if(c.dreambit_post){const a=el('a','Play the community edition');a.href=c.dreambit_post;panel.append(a,el('p','Dreambit sponsorship page views: '+(c.dreambit_views??'unreported')));}
+   else if(c.dreambit_status)panel.append(el('p','Dreambit submission: '+c.dreambit_status));
+  }
   if(town.tabletop_error)panel.append(el('p',town.tabletop_error));
   if(town.marketing_error)panel.append(el('p',town.marketing_error));
   if(town.store_error)panel.append(el('p',town.store_error));

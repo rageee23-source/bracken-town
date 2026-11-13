@@ -192,7 +192,22 @@ def storefront():
         except Exception as error:
             with LOCK:world['store_error']='Store retry scheduled ('+type(error).__name__+').'
         try:
-            if cfg.get('forum'):
+            if cfg.get('tabletop'):
+                import venue_scout
+                try:
+                    venue_scout.scout(world,LOCK,save)
+                except Exception as error:
+                    with LOCK:world['scout_error']=type(error).__name__
+                with LOCK:
+                    campaign=world.setdefault('marketing',{}).setdefault('campaigns',{}).setdefault(str(world['studio']['round']),{})
+                    channels=['forum','nostr']
+                    if str(world['studio']['round']) in cfg.get('playable',{}) and world['marketing'].get('venues',{}).get(venue_scout.POLICIES['dreambit'][0],{}).get('eligible'):
+                        channels.insert(0,'dreambit')
+                    order=venue_scout.focus(world['marketing'],world['studio']['round'],channels)
+                    campaign['focus']=order
+                if 'dreambit' in order[:2]:
+                    venue_scout.list_game(world,LOCK,save,cfg)
+            if cfg.get('forum') and (not cfg.get('tabletop') or 'forum' in order[:2] or campaign.get('forum')):
                 town_accounts.sync_forum(world,LOCK,save,cfg['forum'])
             marketing.sync(world,LOCK,save,cfg['repo'])
             with LOCK:world.pop('marketing_error',None)

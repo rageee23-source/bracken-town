@@ -65,7 +65,7 @@ def sync(world,lock,save,cfg):
         s=world['studio'].copy()
         if s['stage']!='listed' or not s.get('social_copy'):return
         entry=world.setdefault('marketing',{}).setdefault('campaigns',{}).setdefault(str(s['round']),{})
-    if not entry.get('nostr_post'):
+    if not entry.get('nostr_post') and 'nostr' in entry.get('focus',['nostr'])[:2]:
         if time.time()<entry.get('audience_retry',0):return
         with closing(websocket.create_connection(RELAY,timeout=12)) as ws:
             event=entry.get('nostr_event')
@@ -100,7 +100,7 @@ def sync(world,lock,save,cfg):
     if time.time()-entry.get('paths_checked',0)>3600:
         rows=gh('repos/'+cfg['repo']+'/traffic/popular/paths')
         with lock:
-            for source in ('forum','nostr'):
+            for source in ('forum','nostr','dreambit'):
                 path=entry.get(source+'_landing','').removeprefix('https://github.com')
                 match=next((r for r in rows if r['path']==path),None)
                 entry[source+'_views']=match['count'] if match else None
