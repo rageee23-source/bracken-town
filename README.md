@@ -12,7 +12,7 @@ Every resident gets one ballot per assembly. A strict majority enacts the propos
 
 ## Operating funds
 
-The default one-time API allowance is USD 1 for the entire town, including historical estimated usage. Each fresh installation sets its own allowance. Restarting the same saved world preserves the balance. Unknown API outcomes retain a conservative hold. After the allowance runs out, local decisions continue. River power and town coins are fictional.
+The default one-time API allowance is USD 5 for the entire town, including historical estimated usage. Each fresh installation sets its own allowance. Restarting the same saved world preserves the balance. Unknown API outcomes retain a conservative hold. After the allowance runs out, local decisions continue. River power and town coins are fictional.
 
 An operator can credit verified net receipts through a local POST to /api/settlement with Origin http://127.0.0.1:8798 and a JSON object containing a unique reference and a positive integer net_usd_cents. Use settled USD equivalents after external costs and retain the corresponding sale record. Repeating the same reference and amount is safe. On each new receipt, 15% of cumulative net receipts above recorded API spend and holds is earmarked for the owner, rounded down to cents. Previously earmarked amounts stay reserved. The town can spend the remainder. The starting allowance is excluded from revenue. The ledger records an allocation only. The operator reconciles cash, handles refunds, and pays out separately.
 

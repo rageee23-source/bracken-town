@@ -8,9 +8,16 @@ class PolicyTest(unittest.TestCase):
         budget.receive(b,'sale',1020)
         budget.receive(b,'sale',1020)
         self.assertEqual(b['owner_cents'],150)
-        self.assertAlmostEqual(budget.limit(b),9.70)
+        self.assertAlmostEqual(budget.limit(b),13.70)
         with self.assertRaises(ValueError): budget.receive(b,'sale',300)
         self.assertIs(budget.treasury(w),b)
+
+    def test_existing_seed_upgrade(self):
+        ledger = dict(seed=1, spent=.25, held=.005, receipts={'sale': 100}, owner_cents=10)
+        world = {'budget': ledger}
+        for _ in range(2):
+            self.assertEqual(budget.treasury(world), dict(seed=5, spent=.25, held=.005,
+                             receipts={'sale': 100}, owner_cents=10))
 
     def test_majority_and_tie(self):
         for count,target in [(6,12),(5,20)]:

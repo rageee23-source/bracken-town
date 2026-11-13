@@ -1,7 +1,7 @@
 """One-time underwriting and settled USD receipts for the whole town."""
 from decimal import Decimal, ROUND_DOWN
 
-SEED = 1.0
+SEED = 5.0
 RESERVE = .005
 
 def treasury(world):
@@ -10,6 +10,8 @@ def treasury(world):
         b = dict(seed=SEED, spent=world.get('cost', 0), held=b.get('held', 0),
                  receipts={}, owner_cents=0)
         world['budget'] = b
+    elif b['seed'] == 1.0:
+        b['seed'] = SEED
     return b
 
 def limit(b):
