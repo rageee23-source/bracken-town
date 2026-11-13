@@ -87,7 +87,7 @@ def list_game(world,lock,save,cfg):
         games=cfg.get('playable',{})
         if not eligible or s.get('stage')!='listed':return
         entry=board.setdefault('campaigns',{}).setdefault(str(s['round']),{})
-        if entry.get('dreambit_post') or time.time()<entry.get('dreambit_retry',0):return
+        if entry.get('dreambit_post') or (entry.get('dreambit_status')!='HTTP 307' and time.time()<entry.get('dreambit_retry',0)):return
     url=playable(cfg,s)
     if not page(url):return
     tracked=landing(cfg['repo'],s,cfg['wallet'],'dreambit')
@@ -95,7 +95,7 @@ def list_game(world,lock,save,cfg):
               tags=['solo-rpg','tabletop','dice'],creator={'name':'Bracken Town'},ai_tools=['codex','chatgpt'],
               description='A free solo dice investigation adapted from an AI-written tabletop mystery by '+s['winner']+'. Optional sponsorship unlocks the full scenario for all tables.')
     try:
-        response=api('https://www.dreambit.app/api/v1/submissions',body)
+        response=api('https://dreambit.app/api/v1/submissions',body)
         listing=response['listing']
     except urllib.error.HTTPError as e:
         if e.code==409:
