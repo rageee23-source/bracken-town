@@ -100,7 +100,7 @@ def sync(world,lock,save,cfg):
     if time.time()-entry.get('paths_checked',0)>3600:
         rows=gh('repos/'+cfg['repo']+'/traffic/popular/paths')
         with lock:
-            for source in ('forum','nostr','dreambit'):
+            for source in ('forum','nostr','dreambit','directory'):
                 path=entry.get(source+'_landing','').removeprefix('https://github.com')
                 match=next((r for r in rows if r['path']==path),None)
                 entry[source+'_views']=match['count'] if match else None

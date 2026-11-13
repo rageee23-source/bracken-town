@@ -37,7 +37,7 @@ def payment(wallet,memo):
                 if row['err'] is not None or memo not in (row.get('memo') or ''):continue
                 sig=row['signature']
                 tx=rpc('getTransaction',[sig,{**opts,'maxSupportedTransactionVersion':0}])
-                for source in ('direct','nostr','forum','dreambit'):
+                for source in ('direct','nostr','forum','dreambit','directory'):
                     expected=memo if source=='direct' else memo+'-'+source
                     cents=deposited(tx,wallet,expected)
                     if cents:return sig,cents,source

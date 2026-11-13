@@ -75,6 +75,7 @@ function render(){
   if(stats?.venues){const list=document.createElement('details');list.append(el('summary',Object.keys(stats.venues).length+' community and directory checks'));for(const [url,v] of Object.entries(stats.venues)){const a=el('a',v.name);a.href=url;list.append(a,el('p',v.status));}panel.append(list);}
   for(const c of Object.values(stats?.campaigns||{})){
    if(c.focus)panel.append(el('p','Priority this round: '+c.focus.slice(0,2).join(', ')));
+   if(c.directory_post){const a=el('a','Read directory submission');a.href=c.directory_post;panel.append(a,el('p','Directory sponsorship page views: '+(c.directory_views??'unreported')));}
    if(c.dreambit_post){const a=el('a','Play the community edition');a.href=c.dreambit_post;panel.append(a,el('p','Dreambit sponsorship page views: '+(c.dreambit_views??'unreported')));}
    else if(c.dreambit_status)panel.append(el('p','Dreambit submission: '+c.dreambit_status));
   }

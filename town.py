@@ -203,8 +203,12 @@ def storefront():
                     channels=['forum','nostr']
                     if world['marketing'].get('venues',{}).get(venue_scout.POLICIES['dreambit'][0],{}).get('eligible'):
                         channels.insert(0,'dreambit')
+                    if world['marketing'].get('venues',{}).get('https://github.com/maxi-w/awesome-ai-generated-games',{}).get('eligible'):
+                        channels.insert(0,'directory')
                     order=venue_scout.focus(world['marketing'],world['studio']['round'],channels)
                     campaign['focus']=order
+                if 'directory' in order[:2]:
+                    venue_scout.submit_directory(world,LOCK,save,cfg)
                 if 'dreambit' in order[:2]:
                     venue_scout.list_game(world,LOCK,save,cfg)
             if cfg.get('forum') and (not cfg.get('tabletop') or 'forum' in order[:2] or campaign.get('forum')):
