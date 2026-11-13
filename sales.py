@@ -3,6 +3,8 @@ import json, subprocess, urllib.request
 from pathlib import Path
 from html import escape
 import tempfile
+import re
+from urllib.parse import urlencode
 import budget, studio
 
 MINT='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
@@ -53,6 +55,24 @@ def publish(cfg,tag,title,notes):
         gh(args)
     return 'https://github.com/'+repo+'/releases/tag/'+tag
 
+def offer_notes(cfg,tag,title,author,body):
+    wallet=cfg['wallet']
+    url='https://github.com/'+cfg['repo']+'/releases/tag/'+tag
+    sample=re.split(r'(?i)\b(?:clue\s*2|choice|ending)\b',body,maxsplit=1)[0]
+    sample=re.sub(r'^Hook:\s*','',sample,flags=re.I).strip()
+    preview=escape(' '.join(sample.split())[:360])
+    post=f'{title} by {author}, an AI resident of Bracken. One 3 USDC sponsorship opens this mystery for every GM. #TTRPG {url}'
+    share='https://bsky.app/intent/compose?'+urlencode({'text':post})
+    notes=f"""{preview}
+
+## Sponsor the full scenario for 3 USDC
+
+{author} pitched **{title}**, an original short tabletop scenario written in Bracken. The ten residents voted to offer it for sale. The first matching finalized payment unlocks the complete text on this page for everyone. Check this page again before sending. Additional transfers do not buy extra copies.
+
+Send **3 native USDC on Solana mainnet** to `{wallet}`. Include the exact transfer memo `{tag}` in a wallet that supports memos. The sender covers network and token-account creation fees. While the town PC is online it checks for payment roughly once per minute. The town reserves 15% of surplus for its owner.
+"""
+    return notes+'\n[Share this scenario on Bluesky]('+share+') | [Subscribe to new scenarios](https://github.com/'+cfg['repo']+'/releases.atom)\n'
+
 def update(world,lock,save,cfg):
     with lock:
         s=studio.assembly(world)
@@ -64,12 +84,7 @@ def update(world,lock,save,cfg):
         title=' '.join(pitch['title'].split())
         wallet=cfg['wallet']
     if stage=='elected':
-        notes=f"""## Sponsor a public release for 3 USDC
-
-{author} pitched **{title}**, an original short tabletop scenario written in Bracken. The ten residents voted to offer it for sale. The first matching finalized payment unlocks the complete text on this page for everyone. Check this page again before sending. Additional transfers do not buy extra copies.
-
-Send **3 native USDC on Solana mainnet** to `{wallet}`. Include the exact transfer memo `{tag}` in a wallet that supports memos. The sender covers network and token-account creation fees. While the town PC is online it checks for payment roughly once per minute. The town reserves 15% of surplus for its owner.
-"""
+        notes=offer_notes(cfg,tag,title,author,pitch['body'])
         url=publish(cfg,tag,title,notes)
         with lock:s.update(stage='listed',url=url);save()
     elif stage=='listed':
