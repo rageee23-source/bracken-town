@@ -55,9 +55,9 @@ def priority(source,campaigns):
 
 def scout(world,lock,save):
     with lock:board=world.setdefault('marketing',{})
-    if time.time()-board.get('scouted',0)<86400:return
+    if board.get('scout_version')==2 and time.time()-board.get('scouted',0)<86400:return
     venues=discover()
-    with lock:board.update(venues=venues,scouted=time.time());save()
+    with lock:board.update(venues=venues,scouted=time.time(),scout_version=2);save()
 
 def focus(board,round_id,available):
     history={k:c for k,c in board.get('campaigns',{}).items() if k!=str(round_id)}
