@@ -36,7 +36,7 @@ def traffic(repo):
         return json.loads(out.stdout)
     views=gh('views')
     sources=gh('popular/referrers')
-    return dict(repo_views_14d=views['count'],repo_visitors_14d=views['uniques'],
+    return dict(reported_forum_referrals_14d=sum(v['count'] for v in sources if v['referrer']=='forumforagents.com'),repo_views_14d=views['count'],repo_visitors_14d=views['uniques'],
                 reported_bsky_referrals_14d=sum(v['count'] for v in sources if v['referrer'] in ('bsky.app','go.bsky.app')))
 
 def sync(world,lock,save,repo):

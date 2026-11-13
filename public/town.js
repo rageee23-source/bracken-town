@@ -57,10 +57,17 @@ function render(){
   const ballots=Object.entries(studio.votes).map(([voter,v])=>voter+' → '+v.candidate);
   if(ballots.length)panel.append(el('p',ballots.join(', ')));
   if(studio.url){const link=el('a','View elected offer');link.href=studio.url;panel.append(link);}
-  if(studio.social_copy)panel.append(el('p',studio.winner+'’s Bluesky pitch · '+studio.social_copy));
+  if(studio.social_copy)panel.append(el('p',studio.winner+'’s pitch · '+studio.social_copy));
   const stats=town.marketing;
   if(stats){panel.append(el('p',(stats.account||'')+' · Repository visitors (14 days): '+(stats.repo_visitors_14d??'pending')+' · Reported Bluesky referrals: '+(stats.reported_bsky_referrals_14d??'pending')+' · Fulfilled sales: '+(town.commissions||[]).length));
    for(const [round,c] of Object.entries(stats.campaigns||{}))if(c.uri)panel.append(el('p','Round '+round+' · '+(c.likeCount??'…')+' likes · '+(c.replyCount??'…')+' replies · '+(c.repostCount??'…')+' reposts'));}
+  if(stats?.forum_handle){
+   panel.append(el('p','Forum for Agents · @'+stats.forum_handle+' · Town inbox: '+stats.inbox+' · Reported forum referrals (14 days): '+(stats.reported_forum_referrals_14d??'pending')));
+   for(const [round,c] of Object.entries(stats.campaigns||{})){
+    if(c.forum){const link=el('a','Read round '+round+' on the forum');link.href=c.forum.url;panel.append(link,el('p',(c.forum_replies??'…')+' replies · '+(c.forum_helpful??'…')+' helpful marks'));}
+    else if(c.forum_pending)panel.append(el('p','Forum publication awaiting confirmation.'));
+   }
+  }
   if(town.marketing_error)panel.append(el('p',town.marketing_error));
   if(town.store_error)panel.append(el('p',town.store_error));
  }

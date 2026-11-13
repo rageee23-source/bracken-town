@@ -1,6 +1,6 @@
 import json, os, time, threading, uuid, urllib.request, urllib.error
 from pathlib import Path
-import economy, budget, council, studio, sales, marketing
+import economy, budget, council, studio, sales, marketing, town_accounts
 from needs import FACILITIES, initialize, advance, resolve
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -192,6 +192,8 @@ def storefront():
         except Exception as error:
             with LOCK:world['store_error']='Store retry scheduled ('+type(error).__name__+').'
         try:
+            if cfg.get('forum'):
+                town_accounts.sync_forum(world,LOCK,save,cfg['forum'])
             marketing.sync(world,LOCK,save,cfg['repo'])
             with LOCK:world.pop('marketing_error',None)
         except Exception as error:
