@@ -140,7 +140,9 @@ def loop():
             with LOCK:
                 world['warning']='Turn interrupted. The town will retry.'
             worked=True
-        time.sleep((2 if world['cursor']<10 else 20) if worked else 1)
+        opening_assembly=world.get('studio',{})
+        launching=(opening_assembly.get('round')==1 and opening_assembly.get('stage') in ('pitch','vote'))
+        time.sleep((2 if world['cursor']<10 or launching else 20) if worked else 1)
 class Handler(BaseHTTPRequestHandler):
     def log_message(self,*args):pass
     def respond(self,status,body,mime='application/json'):
