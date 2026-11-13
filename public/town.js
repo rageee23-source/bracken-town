@@ -57,6 +57,11 @@ function render(){
   const ballots=Object.entries(studio.votes).map(([voter,v])=>voter+' → '+v.candidate);
   if(ballots.length)panel.append(el('p',ballots.join(', ')));
   if(studio.url){const link=el('a','View elected offer');link.href=studio.url;panel.append(link);}
+  if(studio.social_copy)panel.append(el('p',studio.winner+'’s Bluesky pitch · '+studio.social_copy));
+  const stats=town.marketing;
+  if(stats){panel.append(el('p',(stats.account||'')+' · Repository visitors (14 days): '+(stats.repo_visitors_14d??'pending')+' · Reported Bluesky referrals: '+(stats.reported_bsky_referrals_14d??'pending')+' · Fulfilled sales: '+(town.commissions||[]).length));
+   for(const [round,c] of Object.entries(stats.campaigns||{}))if(c.uri)panel.append(el('p','Round '+round+' · '+(c.likeCount??'…')+' likes · '+(c.replyCount??'…')+' replies · '+(c.repostCount??'…')+' reposts'));}
+  if(town.marketing_error)panel.append(el('p',town.marketing_error));
   if(town.store_error)panel.append(el('p',town.store_error));
  }
  const hall=town.hall, motion=hall?.motion, last=hall?.history.at(-1);

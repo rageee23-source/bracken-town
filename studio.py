@@ -13,6 +13,8 @@ def task(world,actor):
     if s['stage']=='vote' and name not in s['votes']:
         options={k:v['title'] for k,v in s['pitches'].items()}
         return ('vote','Vote for one proposal to sell as a public-release commission. Return the exact author name in selection. Candidates: '+str(options))
+    if s['stage']=='listed' and name==s['winner'] and not s.get('social_copy'):
+        return ('promote','Write your own Bluesky pitch for game masters in social_copy, up to 175 characters. Use the hook from your scenario and mention the 3 USDC public unlock. No links. Scenario: '+s['pitches'][name]['body'])
     return None
 
 def record(world,actor,decision,source):
@@ -20,6 +22,10 @@ def record(world,actor,decision,source):
     todo=task(world,actor)
     if not todo:return
     name=actor['name']
+    if todo[0]=='promote':
+        copy=decision.get('social_copy')
+        if isinstance(copy,str) and copy.strip():s['social_copy']=' '.join(copy.split())[:175]
+        return
     if todo[0]=='pitch':
         title=decision.get('pitch','')
         manuscript=decision.get('manuscript','')

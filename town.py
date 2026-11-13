@@ -1,6 +1,6 @@
 import json, os, time, threading, uuid, urllib.request, urllib.error
 from pathlib import Path
-import economy, budget, council, studio, sales
+import economy, budget, council, studio, sales, marketing
 from needs import FACILITIES, initialize, advance, resolve
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -47,12 +47,13 @@ def choose(actor,neighbors,minute):
         schema=body['response_format']['json_schema']['schema']
         schema['properties']['vote']={'type':'string','enum':['yes','no']}
         schema['required'].append('vote')
+    body['messages'][1]['content'] += ' Town marketing results (repository traffic is aggregate): '+json.dumps({'traffic':world.get('marketing',{}).get('repo_views_14d'),'campaigns':list(world.get('marketing',{}).get('campaigns',{}).values())[-3:],'confirmed_sales':len(world.get('commissions',[]))})
     assignment=studio.task(world,actor)
     if assignment:
         kind,instruction=assignment
         body['messages'][0]['content']+=' At the town hall: '+instruction
         schema=body['response_format']['json_schema']['schema']
-        for field in (['pitch','manuscript'] if kind=='pitch' else ['selection']):
+        for field in (['pitch','manuscript'] if kind=='pitch' else ['social_copy'] if kind=='promote' else ['selection']):
             schema['properties'][field]={'type':'string'}
             schema['required'].append(field)
     if len(json.dumps(body).encode())>65536:raise ValueError('Request size limit')
@@ -190,6 +191,11 @@ def storefront():
             with LOCK:world.pop('store_error',None)
         except Exception as error:
             with LOCK:world['store_error']='Store retry scheduled ('+type(error).__name__+').'
+        try:
+            marketing.sync(world,LOCK,save,cfg['repo'])
+            with LOCK:world.pop('marketing_error',None)
+        except Exception as error:
+            with LOCK:world['marketing_error']='Marketing retry pending ('+type(error).__name__+').'
         time.sleep(60)
 
 if __name__=='__main__':

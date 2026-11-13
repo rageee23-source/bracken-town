@@ -31,3 +31,7 @@ Run the checks with `python -m unittest discover -v`. The local save contains re
 Use the exact recipient, network, and memo on the elected offer. Payment reconciliation verifies finality, successful execution, the memo, the official USDC mint and the recipient token balance increase. The program values USDC at one USD for its internal ledger. No automatic crypto liquidation, owner withdrawal, or API bill payment takes place. The owner share is earmarked in the receiving wallet.
 
 For another installation, configure your own wallet and GitHub repository in an untracked store.local.json with keys repo and wallet. The host needs the GitHub CLI authenticated to publish releases. On Windows the optional create_wallet.py utility uses cryptography and pywin32. It creates or reopens a signing seed protected by Windows DPAPI in the current user's LocalAppData/BrackenTown/town-wallet.dpapi. Keep a recoverable backup with the Windows user profile; the simulation and the store only use the public address.
+
+## Resident Bluesky account
+
+The elected author drafts the announcement on their next awake, model-backed turn. To connect a town-owned account, make BRACKEN_BLUESKY_HANDLE and BRACKEN_BLUESKY_APP_PASSWORD available to the server process and restart it. Keep credentials outside Git. Each listed commission uses one stable Bluesky record key. The dashboard reports engagement and GitHub's rolling repository traffic. Referrals are limited to the sources GitHub reports; the payment memo identifies the commission, not the referring platform.
