@@ -36,8 +36,11 @@ def payment(wallet,memo):
             for row in rows:
                 if row['err'] is not None or memo not in (row.get('memo') or ''):continue
                 sig=row['signature']
-                cents=deposited(rpc('getTransaction',[sig,{**opts,'maxSupportedTransactionVersion':0}]),wallet,memo)
-                if cents:return sig,cents
+                tx=rpc('getTransaction',[sig,{**opts,'maxSupportedTransactionVersion':0}])
+                for source in ('direct','nostr','forum'):
+                    expected=memo if source=='direct' else memo+'-'+source
+                    cents=deposited(tx,wallet,expected)
+                    if cents:return sig,cents,source
             if len(rows)<100:break
             params['before']=rows[-1]['signature']
     return None
@@ -90,9 +93,11 @@ def update(world,lock,save,cfg):
     elif stage=='listed':
         found=payment(wallet,tag)
         if found:
-            sig,cents=found
+            sig,cents,source=found
             with lock:
                 budget.receive(budget.treasury(world),'solana:'+sig,cents)
+                entry=world.setdefault('marketing',{}).setdefault('campaigns',{}).setdefault(str(s['round']),{})
+                entry.update(sale_source=source,sale_cents=cents)
                 s.update(stage='funded');save()
     else:
         publish(cfg,tag,title,'**Funded and released.** Written by '+author+' of Bracken.\n\n<pre>'+escape(pitch['body'])+'</pre>')

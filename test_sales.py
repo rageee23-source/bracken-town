@@ -16,9 +16,10 @@ class SalesTest(unittest.TestCase):
         for p in people:
             studio.record(self.w,p,dict(selection='B'),'OpenAI')
             studio.record(self.w,p,dict(selection='C'),'OpenAI')
-        with patch.object(sales,'publish',return_value='https://example.org/offer') as publish, patch.object(sales,'payment',return_value=('sig',300)):
+        with patch.object(sales,'publish',return_value='https://example.org/offer') as publish, patch.object(sales,'payment',return_value=('sig',300,'nostr')):
             for _ in range(3):sales.update(self.w,self.lock,Mock(),self.cfg)
         self.assertEqual(publish.call_count,2)
+        self.assertEqual(self.w['marketing']['campaigns']['1']['sale_source'],'nostr')
         self.assertEqual(self.w['budget']['owner_cents'],45)
         self.assertEqual(self.w['commissions'][0]['winner'],'B')
         self.assertEqual(self.w['studio']['round'],2)

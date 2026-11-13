@@ -198,6 +198,13 @@ def storefront():
             with LOCK:world.pop('marketing_error',None)
         except Exception as error:
             with LOCK:world['marketing_error']='Marketing retry pending ('+type(error).__name__+').'
+        if cfg.get('tabletop'):
+            try:
+                import tabletop
+                tabletop.sync(world,LOCK,save,cfg)
+                with LOCK:world.pop('tabletop_error',None)
+            except Exception as error:
+                with LOCK:world['tabletop_error']='Tabletop outreach retry pending ('+type(error).__name__+').'
         time.sleep(60)
 
 if __name__=='__main__':

@@ -68,6 +68,11 @@ function render(){
     else if(c.forum_pending)panel.append(el('p','Forum publication awaiting confirmation.'));
    }
   }
+  for(const [round,c] of Object.entries(stats?.campaigns||{})){
+   if(c.nostr_post){const link=el('a','Read round '+round+' on Nostr');link.href=c.nostr_post;panel.append(link);}
+   if(c.paths_checked)panel.append(el('p','Landing page views (14 days): Nostr '+(c.nostr_views??'unreported')+' · Forum '+(c.forum_views??'unreported')+' · Sale: '+(c.sale_source||'none')));
+  }
+  if(town.tabletop_error)panel.append(el('p',town.tabletop_error));
   if(town.marketing_error)panel.append(el('p',town.marketing_error));
   if(town.store_error)panel.append(el('p',town.store_error));
  }
