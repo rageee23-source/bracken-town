@@ -201,7 +201,7 @@ def storefront():
                 with LOCK:
                     campaign=world.setdefault('marketing',{}).setdefault('campaigns',{}).setdefault(str(world['studio']['round']),{})
                     channels=['forum','nostr']
-                    if str(world['studio']['round']) in cfg.get('playable',{}) and world['marketing'].get('venues',{}).get(venue_scout.POLICIES['dreambit'][0],{}).get('eligible'):
+                    if world['marketing'].get('venues',{}).get(venue_scout.POLICIES['dreambit'][0],{}).get('eligible'):
                         channels.insert(0,'dreambit')
                     order=venue_scout.focus(world['marketing'],world['studio']['round'],channels)
                     campaign['focus']=order

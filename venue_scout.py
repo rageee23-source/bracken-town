@@ -53,20 +53,47 @@ def focus(board,round_id,available):
     history={k:c for k,c in board.get('campaigns',{}).items() if k!=str(round_id)}
     return sorted(available,key=lambda k:priority(k,history),reverse=True)
 
+def playable(cfg,s):
+    """Generate the free table exercise for subsequent elected mysteries."""
+    import base64
+    import html
+    import subprocess
+    repo=cfg['repo']
+    supplied=cfg.get('playable',{}).get(str(s['round']))
+    if supplied:return supplied
+    path=f"docs/scene-{s['round']}.html"
+    endpoint=f'repos/{repo}/contents/{path}'
+    try:gh(endpoint)
+    except subprocess.CalledProcessError as e:
+        if '404' not in e.stderr:raise
+        draft=s['pitches'][s['winner']]
+        title=html.escape(draft['title'])
+        setup=html.escape(s['social_copy'])
+        destination=landing(repo,s,cfg['wallet'],'dreambit')
+        body=f"""<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title>
+<style>:root{{color-scheme:dark}}body{{max-width:38rem;margin:8vh auto;padding:1rem;font:20px/1.6 Georgia}}button{{padding:.6rem}}a{{color:wheat}}</style>
+<h1>{title}</h1><p>{setup}</p><p>Solo investigation · On paper, name one witness and one object from the scene. You have two turns to assemble three pieces of evidence. A careful search always earns one. A risky interview earns two on a roll of 4–6 and none otherwise.</p>
+<button onclick="move(false)">Search</button> <button onclick="move(true)">Interview</button><p id="result" role="status">Two turns left.</p>
+<script>let n=2,e=0;function move(r){{if(!n)return;const die=1+Math.floor(Math.random()*6);e+=r?(die>=4?2:0):1;n--;document.querySelector('#result').textContent=(r?'Rolled '+die+'. ':'')+e+' evidence. '+(n?'One turn left.':e>=3?'Case solved. Tell the table which clue broke it open.':'The witness leaves. Write down the loose end for your next session.');if(!n)document.querySelectorAll('button').forEach(b=>b.disabled=true)}}</script>
+<p>AI-written tabletop companion. <a href="{html.escape(destination)}">Sponsor the full original adventure for 3 USDC.</a></p></html>"""
+        gh(endpoint,'--method','PUT','--input','-',data={'message':'Publish playable investigation '+str(s['round']),'content':base64.b64encode(body.encode()).decode()})
+    return f'https://{repo.split("/")[0]}.github.io/{repo.split("/")[1]}/scene-{s["round"]}.html'
+
 def list_game(world,lock,save,cfg):
     with lock:
         s=world.get('studio',{}).copy()
         board=world.setdefault('marketing',{})
         eligible=board.get('venues',{}).get(POLICIES['dreambit'][0],{}).get('eligible')
         games=cfg.get('playable',{})
-        if not eligible or s.get('stage')!='listed' or str(s['round']) not in games:return
+        if not eligible or s.get('stage')!='listed':return
         entry=board.setdefault('campaigns',{}).setdefault(str(s['round']),{})
         if entry.get('dreambit_post') or time.time()<entry.get('dreambit_retry',0):return
-    url=games[str(s['round'])]
+    url=playable(cfg,s)
+    if not page(url):return
     tracked=landing(cfg['repo'],s,cfg['wallet'],'dreambit')
-    body=dict(url=url,title='The missing recipe | Bracken Town',category='rpg',platforms=['web'],
+    body=dict(url=url,title=s['pitches'][s['winner']]['title'][:80],category='rpg',platforms=['web'],
               tags=['solo-rpg','tabletop','dice'],creator={'name':'Bracken Town'},ai_tools=['codex','chatgpt'],
-              description='A free, playable solo d6 scene adapted from Finn’s AI-written tabletop mystery. Follow one of two leads and roll for the outcome. Optional sponsorship unlocks the full scenario for all tables.')
+              description='A free solo dice investigation adapted from an AI-written tabletop mystery by '+s['winner']+'. Optional sponsorship unlocks the full scenario for all tables.')
     try:
         response=api('https://www.dreambit.app/api/v1/submissions',body)
         listing=response['listing']
