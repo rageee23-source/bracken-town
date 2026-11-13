@@ -1,0 +1,5 @@
+town.json
+town.tmp
+__pycache__/
+*.pyc
+.env*
