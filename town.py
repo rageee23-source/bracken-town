@@ -263,6 +263,6 @@ if __name__=='__main__':
         cfg=json.loads(config_path.read_text('utf-8-sig'))
         if cfg.get('guestbook'):
             import village,play_tunnel
-            threading.Thread(target=village.metrics,args=(world,LOCK,save),daemon=True).start()
+            threading.Thread(target=village.metrics,args=(world,LOCK,save,PLACES),daemon=True).start()
             threading.Thread(target=play_tunnel.run,args=(cfg,),daemon=True).start()
     http.serve_forever()

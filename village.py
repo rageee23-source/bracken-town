@@ -47,10 +47,34 @@ def visitors(w,lock,save,cfg,places):
         upload(repo,'village.json',data)
         with lock:v['snapshot']=now;save()
 
-def metrics(w,lock,save):
+def metrics(w,lock,save,places):
+    from village_chat import Conversations
+    conversations=Conversations()
+
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
+        def json_reply(self,status,data):
+            body=json.dumps(data).encode()
+            self.send_response(status);self.send_header('Access-Control-Allow-Origin','https://rageee23-source.github.io')
+            self.send_header('Content-Type','application/json');self.send_header('Cache-Control','no-store')
+            self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
+        def do_GET(self):
+            if self.path!='/village':return self.send_error(404)
+            with lock:
+                data=snapshot(w,places,'https://github.com/rageee23-source/bracken-town/issues/1')
+                data['minute']=w['minutes']
+                for person,resident in zip(data['people'],w['residents']):
+                    person['asleep']=resident['sleep_until']>w['minutes']
+            self.json_reply(200,data)
         def do_POST(self):
+            if self.path=='/chat':
+                if self.headers.get('Origin')!='https://rageee23-source.github.io':return self.send_error(403)
+                try:
+                    size=int(self.headers.get('Content-Length','0'))
+                    if not 0<size<=12000:raise ValueError()
+                    status,data=conversations.reply(w,lock,save,json.loads(self.rfile.read(size)))
+                except (TypeError,ValueError):status,data=400,{'error':'Please send a short message to a resident.'}
+                return self.json_reply(status,data)
             if self.path!='/play' or self.headers.get('Origin')!='https://rageee23-source.github.io':
                 self.send_error(403);return
             try:
