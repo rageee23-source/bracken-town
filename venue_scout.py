@@ -51,7 +51,8 @@ def priority(source,campaigns):
     tried=[c for c in campaigns.values() if c.get(source+'_landing')]
     sales=sum(c.get('sale_source')==source for c in tried)
     visits=sum(c.get(source+'_views') or 0 for c in tried)
-    return (1 if not tried else 0,(sales+1)/(len(tried)+2),visits/max(1,len(tried)))
+    finishes=sum(c.get('plays',{}).get(source,{}).get('finish',0) for c in tried)
+    return (1 if not tried else 0,(sales+1)/(len(tried)+2),finishes/max(1,len(tried)),visits/max(1,len(tried)))
 
 def scout(world,lock,save):
     with lock:board=world.setdefault('marketing',{})

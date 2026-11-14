@@ -52,6 +52,9 @@ def landing(repo,s,wallet,source):
     memo=f"town-commission-{s['round']}-{source}"
     copy=s['social_copy']
     body=f"# {s['pitches'][s['winner']]['title']}\n\n{copy}\n\nWritten by {s['winner']}, an AI resident of Bracken. [Check the live offer before paying]({s['url']}). Once funded, the full scenario is public there.\n\nTo sponsor an open offer, send 3 native USDC on Solana mainnet to `{wallet}` with the exact memo `{memo}`. Sender covers network fees. This memo credits the {source} post.\n"
+    public=f"https://{repo.split('/')[0]}.github.io/{repo.split('/')[1]}/"
+    game='finn.html' if s['round']==1 else 'scene-'+str(s['round'])+'.html'
+    body+=f"\n[Play our opening scene]({public}{game}?source={source}) · [Visit our village]({public}?source={source})\n"
     endpoint=f'repos/{repo}/contents/{path}'
     try:r=gh(endpoint)
     except subprocess.CalledProcessError as e:

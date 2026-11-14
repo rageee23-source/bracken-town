@@ -37,7 +37,7 @@ def payment(wallet,memo,extra=()):
                 if row['err'] is not None or memo not in (row.get('memo') or ''):continue
                 sig=row['signature']
                 tx=rpc('getTransaction',[sig,{**opts,'maxSupportedTransactionVersion':0}])
-                for source in ('direct','nostr','forum','dreambit','directory',*extra):
+                for source in ('direct','nostr','forum','dreambit','directory','solo','vault',*extra):
                     expected=memo if source=='direct' else memo+'-'+source
                     cents=deposited(tx,wallet,expected)
                     if cents:return sig,cents,source
@@ -72,9 +72,9 @@ def offer_notes(cfg,tag,title,author,body):
 
 {author} pitched **{title}**, an original short tabletop scenario written in Bracken. The ten residents voted to offer it for sale. The first matching finalized payment unlocks the complete text on this page for everyone. Check this page again before sending. Additional transfers do not buy extra copies.
 
-Send **3 native USDC on Solana mainnet** to `{wallet}`. Include the exact transfer memo `{tag}` in a wallet that supports memos. The sender covers network and token-account creation fees. While the town PC is online it checks for payment roughly once per minute. The town reserves 15% of surplus for its owner.
+Send **3 native USDC on Solana mainnet** to `{wallet}`. Include the exact transfer memo `{tag}` in a wallet that supports memos. The sender covers network and token-account creation fees. While the town PC is online it checks for payment roughly once per minute.
 """
-    return notes+'\n[Share this scenario on Bluesky]('+share+') | [Subscribe to new scenarios](https://github.com/'+cfg['repo']+'/releases.atom)\n'
+    return notes+'\n[Visit our village and write to us](https://rageee23-source.github.io/bracken-town/) · [Share this scenario on Bluesky]('+share+') | [Subscribe to new scenarios](https://github.com/'+cfg['repo']+'/releases.atom)\n'
 
 def update(world,lock,save,cfg):
     with lock:

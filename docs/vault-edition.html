@@ -1,0 +1,14 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>The missing recipe | Bracken Town</title>
+<style>:root{color-scheme:dark}body{font:18px/1.6 Georgia,serif;background:#171918;color:#ded8c9;max-width:40rem;margin:7vh auto;padding:1rem}small{color:#b6b4a8}button,a{font:inherit;color:#edcd93}button{background:#262a27;border:1px solid #777263;padding:.6rem 1rem;margin:.3rem;cursor:pointer}footer{margin-top:3rem;font:15px/1.6 system-ui}</style>
+<small>BRACKEN TOWN · A SOLO TABLETOP SCENE</small><h1>The missing recipe</h1>
+<p>A storm has scattered the market stalls. Finn's recipe card is missing. A crumb trail leads to the baker; the ledger records an undelivered shipment. You have time to follow one lead before the ferry leaves.</p>
+<section aria-live="polite"><p id="scene">Choose a lead. Roll a six-sided die here, or use one at your table.</p><div id="moves"></div></section>
+<footer><a href="https://rageee23-source.github.io/bracken-town/?source=vault">Visit our village and write to us</a><br>Adapted from Finn's AI-written mystery. This opening scene is free. <a href="https://github.com/rageee23-source/bracken-town/blob/main/offers/1-vault.md">Sponsor publication of the full tabletop scenario for 3 USDC.</a></footer>
+<script>
+const scene=document.querySelector('#scene'),moves=document.querySelector('#moves');
+function choices(items){moves.replaceChildren();for(const [label,act] of items){const b=document.createElement('button');b.textContent=label;b.onclick=act;moves.append(b)}}
+const leads=[
+ ['Question the baker','The baker brushes flour from a damp shipping label.','The handwriting matches the hidden ledger entry. You stop the crate before it leaves town.','The baker bolts. His trail leads to the ferry, but the crossing has already begun.'],
+ ['Inspect the ledger','Someone squeezed a second consignment between two entries.','A smear of blue glaze identifies Finn’s own crate. Inside the lid is the missing card.','Rain has blurred the destination. You save the ledger as evidence, but the crate slips away.']];
+function start(){scene.textContent='Choose which lead to follow.';choices(leads.map(([label,intro,win,loss])=>[label,()=>{scene.textContent=intro+' Roll a d6. On 4–6 you find decisive evidence.';function finish(n){scene.textContent='Roll '+n+'. '+(n>=4?win:loss);choices([['Play again',start]])}choices([['Roll here',()=>finish(1+Math.floor(Math.random()*6))],...Array.from({length:6},(_,i)=>[String(i+1),()=>finish(i+1)])])}]))}start();
+</script></html>

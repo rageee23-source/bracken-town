@@ -80,6 +80,7 @@ function render(){
    else if(c.dreambit_status)panel.append(el('p','Dreambit submission: '+c.dreambit_status));
   }
   if(stats?.moderation){panel.append(el('p','Moderator inbox · '+(stats.moderation.account||'checking account')));for(const r of Object.values(stats.moderation.records)){const a=el('a',r.url);a.href=r.post||r.url;panel.append(a,el('p','Round '+r.round+' · '+r.state));}}
+  for(const c of Object.values(stats?.campaigns||{})){for(const [source,p] of Object.entries(c.plays||{}))panel.append(el('p',source+' · '+p.start+' play starts · '+p.finish+' finishes'));if(c.solo_decision)panel.append(el('p','Solo RPG curator · '+c.solo_decision));if(c.vault_post){const a=el('a','View Game Vault submission');a.href=c.vault_post;panel.append(a);}}
   if(town.moderation_error)panel.append(el('p',town.moderation_error));
   if(town.tabletop_error)panel.append(el('p',town.tabletop_error));
   if(town.marketing_error)panel.append(el('p',town.marketing_error));
