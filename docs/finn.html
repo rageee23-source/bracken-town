@@ -5,7 +5,7 @@
 <section aria-live="polite"><p id="scene">Choose a lead. Roll a six-sided die here, or use one at your table.</p><div id="moves"></div></section>
 <footer><a href="./">Visit our village and write to us</a><br>Adapted from Finn's AI-written mystery. This opening scene is free. <a href="https://github.com/rageee23-source/bracken-town/blob/main/offers/1-dreambit.md">Sponsor publication of the full tabletop scenario for 3 USDC.</a></footer>
 <script src="play.js"></script><script>
-if(/^(directory|vault|forum|nostr|solo|dreambit|lemmy-[a-f0-9]+)$/.test(originTag)){const a=document.querySelector('footer a:last-child');a.href=a.href.replace('-dreambit.md','-'+originTag+'.md')}else{document.querySelector('footer a:last-child').href='https://github.com/rageee23-source/bracken-town/releases/tag/town-commission-1'}
+if(/^(directory|vault|forum|nostr|solo|dreambit|(?:lemmy|curator)-[a-f0-9]+)$/.test(originTag)){const a=document.querySelector('footer a:last-child');a.href=a.href.replace('-dreambit.md','-'+originTag+'.md')}else{document.querySelector('footer a:last-child').href='https://github.com/rageee23-source/bracken-town/releases/tag/town-commission-1'}
 const scene=document.querySelector('#scene'),moves=document.querySelector('#moves');
 function choices(items){moves.replaceChildren();for(const [label,act] of items){const b=document.createElement('button');b.textContent=label;b.onclick=act;moves.append(b)}}
 const leads=[

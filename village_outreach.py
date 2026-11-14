@@ -41,22 +41,42 @@ The linked hosted game counts anonymous plays. For inclusion in the vault, use o
 """
             posted=issue(VAULT,'[Game] Breadline Mystery at the Market',body)
             with lock:c.update(vault_post=posted['html_url'],vault_landing=url);save()
-    if not c.get('solo_request'):
-        if 'solo rpgs' not in page('https://github.com/'+SOLO):return
-        ask=issue(SOLO,'Curator question: would a disclosed AI-written solo dice scene fit this list?',
+    # Always keep polling existing permission threads, independently of Lemmy.
+    candidates=gh('search/repositories?q=solo+rpg+awesome+in:name,description&per_page=25')['items']
+    repos=[SOLO]+[item['full_name'] for item in candidates if item['has_issues'] and not item['archived']
+                  and 'list' in (item['description'] or '').lower() and item['full_name']!=SOLO]
+    import hashlib
+    for repo in dict.fromkeys(repos+list(c.get('curator_threads',{}))):
+        row=c.setdefault('curator_threads',{}).setdefault(repo,{})
+        source='solo' if repo==SOLO else 'curator-'+hashlib.sha256(repo.encode()).hexdigest()[:12]
+        if repo==SOLO and c.get('solo_request'):row.update(number=c['solo_request'],url=c['solo_request_url'])
+        if not row.get('number') and time.time()<c.get('next_curator_ask',0):continue
+        ask_curator(w,lock,save,cfg,c,s,repo,row,source)
+
+def ask_curator(w,lock,save,cfg,c,s,repo,row,source):
+    if not row.get('number'):
+        policy=page('https://github.com/'+repo)
+        if 'solo' not in policy or any(x in policy for x in ('no ai-generated','no ai generated','no submissions','no self-promotion')):return
+        ask=issue(repo,'Curator question: would a disclosed AI-written solo dice scene fit this list?',
           'Hello from Bracken, a simulated village. Finn, our AI potter, wrote a short solo mystery playable with one die, free of charge. The hosted edition also links to an optional 3 USDC sponsorship for publishing the full adventure. Would one clearly labelled submission here be welcome? If so, reply “yes” and we will add the link in this issue. If there are conditions, please spell them out; we will hold it. Thank you.')
-        with lock:c.update(solo_request=ask['number'],solo_request_url=ask['html_url'],solo_decision='awaiting curator');save()
-    if c.get('solo_post') or c.get('solo_decision')=='declined':return
-    base=f"repos/{SOLO}/issues/{c['solo_request']}"
+        with lock:
+            row.update(number=ask['number'],url=ask['html_url'],decision='awaiting curator');c['next_curator_ask']=time.time()+86400
+            if repo==SOLO:c.update(solo_request=ask['number'],solo_request_url=ask['html_url'],solo_decision='awaiting curator')
+            save()
+    if row.get('post') or row.get('decision')=='declined':return
+    base=f"repos/{repo}/issues/{row['number']}"
     replies=gh(base+'/comments?per_page=100')
     official=[r for r in replies if r['author_association'] in ('OWNER','MEMBER','COLLABORATOR')]
     if not official:return
     r=official[-1];text=r['body'].strip().casefold().rstrip('.!')
     state='approved' if text=='yes' else 'declined' if text=='no' else 'conditions pending'
-    with lock:c.update(solo_decision=state,solo_reply=r['html_url']);save()
+    with lock:
+        row.update(decision=state,reply=r['html_url'])
+        if repo==SOLO:c.update(solo_decision=state,solo_reply=r['html_url'])
+        save()
     if state=='approved':
-        tracked=landing(cfg['repo'],s,cfg['wallet'],'solo')
-        play=VILLAGE+'finn.html?source=solo'
+        tracked=landing(cfg['repo'],s,cfg['wallet'],source)
+        play=VILLAGE+'finn.html?source='+source
         post=next((r for r in replies if r['user']['login']=='rageee23-source' and play in r['body']),None)
-        post=post or gh(base+'/comments','--method','POST','--input','-',data={'body':s['social_copy']+'\n\nWritten by Finn, our AI potter. [Play the free scene]('+play+') · [Meet us]('+VILLAGE+'?source=solo) · [Optional sponsorship]('+tracked+').'})
-        with lock:c.update(solo_post=post['html_url'],solo_landing=tracked);save()
+        post=post or gh(base+'/comments','--method','POST','--input','-',data={'body':s['social_copy']+'\n\nWritten by Finn, our AI potter. [Play the free scene]('+play+') · [Meet us]('+VILLAGE+'?source='+source+') · [Optional sponsorship]('+tracked+').'})
+        with lock:row['post']=post['html_url'];c[source+'_landing']=tracked;c[source+'_post']=post['html_url'];save()

@@ -92,7 +92,7 @@ def update(world,lock,save,cfg):
         with lock:s.update(stage='listed',url=url);save()
     elif stage=='listed':
         record=world.get('marketing',{}).get('campaigns',{}).get(str(s['round']),{})
-        extra=tuple(k[:-8] for k in record if k.startswith('lemmy-') and k.endswith('_landing'))
+        extra=tuple(k[:-8] for k in record if k.startswith(('lemmy-','curator-')) and k.endswith('_landing'))
         found=payment(wallet,tag,extra)
         if found:
             sig,cents,source=found

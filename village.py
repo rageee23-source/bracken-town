@@ -51,7 +51,6 @@ def metrics(w,lock,save):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self,*args):pass
         def do_POST(self):
-            allowed='/bracken-town'
             if self.path!='/play' or self.headers.get('Origin')!='https://rageee23-source.github.io':
                 self.send_error(403);return
             try:
@@ -64,7 +63,9 @@ def metrics(w,lock,save):
                     if source!='direct' and not c.get(source+'_landing'):raise ValueError()
                     if not re.fullmatch('[a-f0-9]{32}',sid) or step not in ('start','finish'):raise ValueError()
                     seen=w.setdefault('play_sessions',{});now=time.time()
-                    if len(seen)>10000:raise ValueError()
+                    if len(seen)>=10000:
+                        for k in [k for k,v in seen.items() if now-v[1]>86400]:seen.pop(k)
+                        if len(seen)>=10000:raise ValueError()
                     key=source+'-'+sid
                     prior=seen.get(key)
                     if step=='start' and not prior or step=='finish' and prior and prior[0]=='start':
